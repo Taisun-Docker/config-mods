@@ -1,0 +1,17 @@
+sudo: true
+
+language: bash
+
+services:
+  - docker
+
+env:
+  global:
+    - DEBIAN_FRONTEND="noninteractive"
+    - DOCKERHUB_LIVE="taisun/config-mods"
+
+jobs:
+  include:
+    - stage: "Build Containers"
+      name: "Build all mods"
+      script: ./builder.sh
