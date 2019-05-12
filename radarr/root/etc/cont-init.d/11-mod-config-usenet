@@ -148,6 +148,7 @@ fi
     VALUES('/data/movies');"
 
 # permissions
-mkdir -p /data
+mkdir -p /data/movies
 chown abc:abc \
-	/data
+	/data \
+  /data/movies
