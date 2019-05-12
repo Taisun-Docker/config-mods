@@ -1,0 +1,54 @@
+#!/usr/bin/with-contenv bash
+
+# Env variable validation
+VARS=( \
+SERVER_USER \
+SERVER_PASS \
+SERVER_PROVIDER
+)
+for i in "${VARS[@]}"; do
+  if [ -z ${!i+x} ]; then
+    echo "[cont-init.d] ${i} is required and is not set will not continue"
+    exit 0
+  fi
+done
+
+# check if config file exists in /config
+if [ ! -f /config/nzbget.conf ]; then
+  cp /defaults/modconfig /config/nzbget.conf
+else
+  echo "[cont-init.d] This container is already configured"
+  exit 0
+fi
+
+# Set variables based on index provider passed
+if [ "${SERVER_PROVIDER}" == "Supernews" ]; then
+  SERVER_HOST="news.supernews.com"
+  SERVER_PORT="443"
+  SERVER_SSL="yes"
+  SERVER_CONS="20"
+elif [ "${SERVER_PROVIDER}" == "XSNews" ]; then
+  SERVER_HOST="reader.xsnews.nl	"
+  SERVER_PORT="443"
+  SERVER_SSL="yes"
+  SERVER_CONS="20"
+else
+  echo "[cont-init.d] Your Provider ${SERVER_PROVIDER} is not recognized will not continue"
+  rm /config/nzbget.conf
+  exit 0
+fi
+
+# Sed in real values for config file
+sed -i \
+  -e "s/SERVER_HOST/${SERVER_HOST}/g"\
+  -e "s/SERVER_PORT/${SERVER_PORT}/g"\
+  -e "s/SERVER_USER/${SERVER_USER}/g"\
+  -e "s/SERVER_PASS/${SERVER_PASS}/g"\
+  -e "s/SERVER_SSL/${SERVER_SSL}/g"\
+  -e "s/SERVER_CONS/${SERVER_CONS}/g"\
+  /config/nzbget.conf
+
+# permissions
+mkdir -p /data
+chown abc:abc \
+	/data

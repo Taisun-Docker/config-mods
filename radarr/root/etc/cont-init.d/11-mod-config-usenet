@@ -94,7 +94,6 @@ fi
       \"searchByTitle\": false\
     }',\
      \"${INDEX_CONFIG}\",1,1);"
-
 /usr/bin/sqlite3 /config/${DBNAME}.db "\
   INSERT INTO \
   DownloadClients(\
@@ -119,7 +118,6 @@ fi
       \"addPaused\": false\
     }',\
     'NzbgetSettings');"
-
 /usr/bin/sqlite3 /config/${DBNAME}.db "\
   INSERT INTO \
     NamingConfig(\
@@ -136,9 +134,6 @@ fi
       '{Movie Title} ({Release Year})',\
       '{Movie Title} ({Release Year})',\
       0);"
-
-
-
 /usr/bin/sqlite3 /config/${DBNAME}.db "\
   UPDATE NamingConfig SET \
     'MultiEpisodeStyle' = 0,\
@@ -147,8 +142,12 @@ fi
     'StandardMovieFormat' = '{Movie Title} ({Release Year})',\
     'MovieFolderFormat' = '{Movie Title} ({Release Year})',\
     'ColonReplacementFormat' = 0"
-
 /usr/bin/sqlite3 /config/${DBNAME}.db "\
   INSERT INTO \
     RootFolders('Path') \
     VALUES('/data/movies');"
+
+# permissions
+mkdir -p /data
+chown abc:abc \
+	/data
