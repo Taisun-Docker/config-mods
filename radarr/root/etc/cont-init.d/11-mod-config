@@ -1,0 +1,113 @@
+#!/usr/bin/with-contenv bash
+
+# check if this is a fresh container run service briefly to create database
+if [ ! -f "/config/nzbdrone.db" ]; then
+  (mono /opt/radarr/Radarr.exe \
+  -nobrowser -data=/config > /dev/null 2>&1) & PID=$!
+  while ! [ -f "/config/nzbdrone.db" ];
+  do
+      echo "waiting for Radarr to create a DB..."
+      sleep 1
+  done
+  sleep 5
+  kill $PID
+else
+  echo "[cont-init.d] This container is already configured"
+  exit 0
+fi
+
+# Set port to default if unset
+if [ -z ${NZBGET_PORT+x} ]; then \
+  NZBGET_PORT="6789"
+fi
+
+# Set variables based on index provider passed
+if [ "${INDEX_PROVIDER}" == "Nzbplanet" ]; then
+  INDEX_NAME="nzbplanet.net"
+  INDEX_TYPE="Newznab"
+  INDEX_URL="https://api.nzbplanet.net"
+  INDEX_CATAGORIES="[2000,2010,2020,2030,2040,2050,2060]"
+  INDEX_CONFIG="NewznabSettings"
+fi
+
+# Insert our fresh config into the database
+/usr/bin/sqlite3 /config/nzbdrone.db "\
+  INSERT INTO \
+  Indexers(\
+    'Name',\
+    'Implementation',\
+    'Settings',\
+    'ConfigContract',\
+    'EnableRss',\
+    'EnableSearch') \
+  VALUES(\
+    \"${INDEX_NAME}\",\
+    \"${INDEX_TYPE}\",\
+    '{\
+      \"baseUrl\": \"${INDEX_URL}\",\
+      \"multiLanguages\": [],\
+      \"apiKey\": \"${API_KEY}\",\
+      \"categories\": ${INDEX_CATAGORIES},\
+      \"animeCategories\": [],\
+      \"removeYear\": false,\
+      \"searchByTitle\": false\
+    }',\
+     \"${INDEX_CONFIG}\",1,1);"
+
+/usr/bin/sqlite3 /config/nzbdrone.db "\
+  INSERT INTO \
+  DownloadClients(\
+    'Enable',\
+    'Name',\
+    'Implementation',\
+    'Settings',\
+    'ConfigContract') \
+  VALUES(\
+    1,\
+    'nzbget',\
+    'Nzbget',\
+    '{\
+      \"host\": \"${NZBGET_HOST}\",\
+      \"port\": ${NZBGET_PORT},\
+      \"username\": \"nzbget\",\
+      \"password\": \"null\",\
+      \"movieCategory\": \"Movies\",\
+      \"recentMoviePriority\": 0,\
+      \"olderMoviePriority\": 0,\
+      \"useSsl\": false,\
+      \"addPaused\": false\
+    }',\
+    'NzbgetSettings');"
+
+/usr/bin/sqlite3 /config/nzbdrone.db "\
+  INSERT INTO \
+    NamingConfig(\
+      'MultiEpisodeStyle',\
+      'RenameEpisodes',\
+      'ReplaceIllegalCharacters',\
+      'StandardMovieFormat',\
+      'MovieFolderFormat',\
+      'ColonReplacementFormat') \
+    VALUES(\
+      0,\
+      1,\
+      1,\
+      '{Movie Title} ({Release Year})',\
+      '{Movie Title} ({Release Year})',\
+      0);"
+
+
+
+/usr/bin/sqlite3 /config/nzbdrone.db "\
+  UPDATE NamingConfig SET \
+    'MultiEpisodeStyle' = 0,\
+    'RenameEpisodes' = 1,\
+    'ReplaceIllegalCharacters' = 1,\
+    'StandardMovieFormat' = '{Movie Title} ({Release Year})',\
+    'MovieFolderFormat' = '{Movie Title} ({Release Year})',\
+    'ColonReplacementFormat' = 0"
+
+/usr/bin/sqlite3 /config/nzbdrone.db "\
+  INSERT INTO \
+    RootFolders('Path') \
+    VALUES('/data/movies');"
