@@ -1,0 +1,159 @@
+#!/usr/bin/with-contenv bash
+
+# Env variable validation
+VARS=( \
+INDEX_PROVIDER \
+API_KEY \
+NZBGET_HOST
+)
+for i in "${VARS[@]}"; do
+  if [ -z ${!i+x} ]; then
+    echo "[cont-init.d] ${i} is required and is not set will not continue"
+    exit 0
+  fi
+done
+
+# Set executable path
+if [ -f "/opt/NzbDrone/NzbDrone.exe" ]; then
+  EXE="/opt/NzbDrone/NzbDrone.exe"
+else
+  EXE="/usr/lib/sonarr/bin/Sonarr.exe"
+fi
+
+# Check if this is a fresh container run service briefly to create database
+if [ ! -f "/config/nzbdrone.db" -a ! -f "/config/sonarr.db" ]; then
+  (mono ${EXE} \
+  -nobrowser -data=/config > /dev/null 2>&1) & PID=$!
+  while [ ! -f "/config/nzbdrone.db" -a ! -f "/config/sonarr.db" ];
+  do
+      echo "waiting for Sonarr to create a DB..."
+      sleep 1
+  done
+  sleep 5
+  kill $PID
+else
+  echo "[cont-init.d] This container is already configured"
+  exit 0
+fi
+
+# Set database name
+if [ -f "/config/sonarr.db" ]; then
+  DBNAME=sonarr
+else
+  DBNAME=nzbdrone
+fi
+
+# Set port to default if unset
+if [ -z ${NZBGET_PORT+x} ]; then
+  NZBGET_PORT="6789"
+fi
+
+# Set variables based on index provider passed
+if [ "${INDEX_PROVIDER}" == "Nzbplanet" ]; then
+  INDEX_NAME="nzbplanet.net"
+  INDEX_TYPE="Newznab"
+  INDEX_URL="https://api.nzbplanet.net"
+  INDEX_CATAGORIES="[5030,5040]"
+  INDEX_CONFIG="NewznabSettings"
+elif [ "${INDEX_PROVIDER}" == "Miatrix" ]; then
+  INDEX_NAME="miatrix.com"
+  INDEX_TYPE="Newznab"
+  INDEX_URL="https://api.miatrix.com/"
+  INDEX_CATAGORIES="[5030,5040]"
+  INDEX_CONFIG="NewznabSettings"
+elif [ "${INDEX_PROVIDER}" == "NZBgeek" ]; then
+  INDEX_NAME="nzbgeek.info"
+  INDEX_TYPE="Newznab"
+  INDEX_URL="https://api.nzbgeek.info"
+  INDEX_CATAGORIES="[5030,5040]"
+  INDEX_CONFIG="NewznabSettings"
+elif [ "${INDEX_PROVIDER}" == "NZBsu" ]; then
+  INDEX_NAME="Nzb.su"
+  INDEX_TYPE="Newznab"
+  INDEX_URL="https://api.nzb.su"
+  INDEX_CATAGORIES="[5030,5040]"
+  INDEX_CONFIG="NewznabSettings"
+else
+  echo "[cont-init.d] Your Provider ${INDEX_PROVIDER} is not recognized will not continue"
+  exit 0
+fi
+
+# Insert our fresh config into the database
+/usr/bin/sqlite3 /config/${DBNAME}.db "\
+  INSERT INTO \
+  Indexers(\
+    'Name',\
+    'Implementation',\
+    'Settings',\
+    'ConfigContract',\
+    'EnableRss',\
+    'EnableSearch') \
+  VALUES(\
+    \"${INDEX_NAME}\",\
+    \"${INDEX_TYPE}\",\
+    '{\
+      \"baseUrl\": \"${INDEX_URL}\",\
+      \"multiLanguages\": [],\
+      \"apiKey\": \"${API_KEY}\",\
+      \"categories\": ${INDEX_CATAGORIES},\
+      \"animeCategories\": [],\
+      \"removeYear\": false,\
+      \"searchByTitle\": false\
+    }',\
+     \"${INDEX_CONFIG}\",1,1);"
+/usr/bin/sqlite3 /config/${DBNAME}.db "\
+  INSERT INTO \
+  DownloadClients(\
+    'Enable',\
+    'Name',\
+    'Implementation',\
+    'Settings',\
+    'ConfigContract') \
+  VALUES(\
+    1,\
+    'nzbget',\
+    'Nzbget',\
+    '{\
+      \"host\": \"${NZBGET_HOST}\",\
+      \"port\": ${NZBGET_PORT},\
+      \"username\": \"nzbget\",\
+      \"password\": \"null\",\
+      \"tvCategory\": \"Series\",\
+      \"recentTvPriority\": 0,\
+      \"olderTvPriority\": 0,\
+      \"addPaused\": false,\
+      \"useSsl\": false\
+    }',\
+    'NzbgetSettings');"
+/usr/bin/sqlite3 /config/${DBNAME}.db "\
+  INSERT INTO \
+    NamingConfig(\
+      'MultiEpisodeStyle',\
+      'RenameEpisodes',\
+      'StandardEpisodeFormat',\
+      'DailyEpisodeFormat',\
+      'SeasonFolderFormat',\
+      'SeriesFolderFormat',\
+      'AnimeEpisodeFormat',\
+      'ReplaceIllegalCharacters') \
+    VALUES(\
+      0,\
+      1,\
+      '{Series Title} - S{season:00}E{episode:00} - {Episode Title}',\
+      '{Series Title} - {Air-Date} - {Episode Title}',\
+      'Season {season}',\
+      '{Series Title}',\
+      '{Series Title} - S{season:00}E{episode:00} - {Episode Title}',\
+      1);"
+/usr/bin/sqlite3 /config/${DBNAME}.db "\
+  INSERT INTO \
+    RootFolders('Path') \
+    VALUES('/data/tv');"
+
+# permissions
+mkdir -p /data/tv
+chown abc:abc \
+  /data \
+  /data/tv
+chown -R abc:abc \
+  /config
