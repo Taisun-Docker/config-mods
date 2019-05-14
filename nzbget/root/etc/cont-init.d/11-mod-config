@@ -28,7 +28,12 @@ if [ "${SERVER_PROVIDER}" == "Supernews" ]; then
   SERVER_SSL="yes"
   SERVER_CONS="20"
 elif [ "${SERVER_PROVIDER}" == "XSNews" ]; then
-  SERVER_HOST="reader.xsnews.nl	"
+  SERVER_HOST="reader.xsnews.nl"
+  SERVER_PORT="443"
+  SERVER_SSL="yes"
+  SERVER_CONS="20"
+elif [ "${SERVER_PROVIDER}" == "UsenetServer" ]; then
+  SERVER_HOST="news.usenetserver.com"
   SERVER_PORT="443"
   SERVER_SSL="yes"
   SERVER_CONS="20"

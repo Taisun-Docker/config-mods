@@ -63,6 +63,13 @@ elif [ "${INDEX_PROVIDER}" == "NZBsu" ]; then
   INDEX_CATAGORIES="[3000,3010,3020,3030,3040]"
   INDEX_CONFIG="NewznabSettings"
   INDEX_PATH="/api"
+elif [ "${INDEX_PROVIDER}" == "usenet-crawler" ]; then
+  INDEX_NAME="Usenet Crawler"
+  INDEX_TYPE="Newznab"
+  INDEX_URL="https://www.usenet-crawler.com"
+  INDEX_CATAGORIES="[3000,3010,3020,3030,3040]"
+  INDEX_CONFIG="NewznabSettings"
+  INDEX_PATH="/api"
 else
   echo "[cont-init.d] Your Provider ${INDEX_PROVIDER} is not recognized will not continue"
   exit 0
