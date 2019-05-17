@@ -37,6 +37,26 @@ elif [ "${SERVER_PROVIDER}" == "UsenetServer" ]; then
   SERVER_PORT="443"
   SERVER_SSL="yes"
   SERVER_CONS="20"
+elif [ "${SERVER_PROVIDER}" == "Newshosting" ]; then
+  SERVER_HOST="news.newshosting.com"
+  SERVER_PORT="443"
+  SERVER_SSL="yes"
+  SERVER_CONS="20"
+elif [ "${SERVER_PROVIDER}" == "Easynews" ]; then
+  SERVER_HOST="news.easynews.com"
+  SERVER_PORT="443"
+  SERVER_SSL="yes"
+  SERVER_CONS="20"
+elif [ "${SERVER_PROVIDER}" == "Pure-Usenet" ]; then
+  SERVER_HOST="news.pureusenet.nl"
+  SERVER_PORT="443"
+  SERVER_SSL="yes"
+  SERVER_CONS="10"
+elif [ "${SERVER_PROVIDER}" == "XLned" ]; then
+  SERVER_HOST="news.xlned.com"
+  SERVER_PORT="443"
+  SERVER_SSL="yes"
+  SERVER_CONS="10"
 else
   echo "[cont-init.d] Your Provider ${SERVER_PROVIDER} is not recognized will not continue"
   rm /config/nzbget.conf
