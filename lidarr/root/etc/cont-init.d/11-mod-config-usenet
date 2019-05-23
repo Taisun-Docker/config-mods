@@ -22,6 +22,11 @@ if [ ! -f "/config/lidarr.db" ]; then
       echo "waiting for Lidarr to create a DB..."
       sleep 1
   done
+  while ! /usr/bin/sqlite3 /config/lidarr.db 'select * from NamingConfig' > /dev/null 2>&1;
+  do
+      echo "waiting for Lidarr to populate the DB..."
+      sleep 1
+  done
   sleep 5
   kill $PID
 else

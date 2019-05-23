@@ -29,18 +29,22 @@ if [ ! -f "/config/nzbdrone.db" -a ! -f "/config/sonarr.db" ]; then
       echo "waiting for Sonarr to create a DB..."
       sleep 1
   done
+  # Set database name
+  if [ -f "/config/sonarr.db" ]; then
+    DBNAME=sonarr
+  else
+    DBNAME=nzbdrone
+  fi
+  while ! /usr/bin/sqlite3 /config/${DBNAME}.db 'select * from NamingConfig' > /dev/null 2>&1;
+  do
+      echo "waiting for Sonarr to populate the DB..."
+      sleep 1
+  done
   sleep 5
   kill $PID
 else
   echo "[cont-init.d] This container is already configured"
   exit 0
-fi
-
-# Set database name
-if [ -f "/config/sonarr.db" ]; then
-  DBNAME=sonarr
-else
-  DBNAME=nzbdrone
 fi
 
 # Set port to default if unset
