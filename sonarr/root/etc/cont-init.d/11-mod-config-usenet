@@ -35,12 +35,22 @@ if [ ! -f "/config/nzbdrone.db" -a ! -f "/config/sonarr.db" ]; then
   else
     DBNAME=nzbdrone
   fi
-  while ! /usr/bin/sqlite3 /config/${DBNAME}.db 'select * from NamingConfig' > /dev/null 2>&1;
+  while true;
   do
-      echo "waiting for Sonarr to populate the DB..."
-      sleep 1
+      echo "waiting for database schema import..."
+      if [ -z ${COMPARE_MD5+x} ]; then
+        COMPARE_MD5=$(md5sum /config/${DBNAME}.db| cut -c1-8)
+        sleep 3
+      else
+        sleep 3
+        CURRENT_MD5=$(md5sum /config/${DBNAME}.db| cut -c1-8)
+        if [ "${CURRENT_MD5}" == ${COMPARE_MD5} ]; then
+          break
+        else
+          COMPARE_MD5=$(md5sum /config/${DBNAME}.db| cut -c1-8)
+        fi
+      fi
   done
-  sleep 5
   kill $PID
 else
   echo "[cont-init.d] This container is already configured"
@@ -88,11 +98,8 @@ else
   exit 0
 fi
 
-# Timeout Prepend
-TIMEOUT="pragma busy_timeout=30000;"
 # Insert our fresh config into the database
 /usr/bin/sqlite3 /config/${DBNAME}.db "\
-  ${TIMEOUT} \
   INSERT INTO \
   Indexers(\
     'Name',\
@@ -115,7 +122,6 @@ TIMEOUT="pragma busy_timeout=30000;"
     }',\
      \"${INDEX_CONFIG}\",1,1);"
 /usr/bin/sqlite3 /config/${DBNAME}.db "\
-  ${TIMEOUT} \
   INSERT INTO \
   DownloadClients(\
     'Enable',\
@@ -140,7 +146,6 @@ TIMEOUT="pragma busy_timeout=30000;"
     }',\
     'NzbgetSettings');"
 /usr/bin/sqlite3 /config/${DBNAME}.db "\
-  ${TIMEOUT} \
   INSERT INTO \
     NamingConfig(\
       'MultiEpisodeStyle',\
@@ -161,7 +166,6 @@ TIMEOUT="pragma busy_timeout=30000;"
       '{Series Title} - S{season:00}E{episode:00} - {Episode Title}',\
       1);"
 /usr/bin/sqlite3 /config/${DBNAME}.db "\
-  ${TIMEOUT} \
   INSERT INTO \
     RootFolders('Path') \
     VALUES('/data/tv');"
