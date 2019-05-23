@@ -88,8 +88,11 @@ else
   exit 0
 fi
 
+# Timeout Prepend
+TIMEOUT="pragma busy_timeout=30000;"
 # Insert our fresh config into the database
 /usr/bin/sqlite3 /config/${DBNAME}.db "\
+  ${TIMEOUT} \
   INSERT INTO \
   Indexers(\
     'Name',\
@@ -112,6 +115,7 @@ fi
     }',\
      \"${INDEX_CONFIG}\",1,1);"
 /usr/bin/sqlite3 /config/${DBNAME}.db "\
+  ${TIMEOUT} \
   INSERT INTO \
   DownloadClients(\
     'Enable',\
@@ -136,6 +140,7 @@ fi
     }',\
     'NzbgetSettings');"
 /usr/bin/sqlite3 /config/${DBNAME}.db "\
+  ${TIMEOUT} \
   INSERT INTO \
     NamingConfig(\
       'MultiEpisodeStyle',\
@@ -156,6 +161,7 @@ fi
       '{Series Title} - S{season:00}E{episode:00} - {Episode Title}',\
       1);"
 /usr/bin/sqlite3 /config/${DBNAME}.db "\
+  ${TIMEOUT} \
   INSERT INTO \
     RootFolders('Path') \
     VALUES('/data/tv');"

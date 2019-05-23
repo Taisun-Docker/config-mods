@@ -80,8 +80,11 @@ else
   exit 0
 fi
 
+# Timeout Prepend
+TIMEOUT="pragma busy_timeout=30000;"
 # Insert our fresh config into the database
 /usr/bin/sqlite3 /config/lidarr.db "\
+  ${TIMEOUT} \
   INSERT INTO \
   Indexers(\
     'Name',\
@@ -102,6 +105,7 @@ fi
     }',\
      \"${INDEX_CONFIG}\",1,1,1);"
 /usr/bin/sqlite3 /config/lidarr.db "\
+  ${TIMEOUT} \
   INSERT INTO \
   DownloadClients(\
     'Enable',\
@@ -126,6 +130,7 @@ fi
     }',\
     'NzbgetSettings');"
 /usr/bin/sqlite3 /config/lidarr.db "\
+  ${TIMEOUT} \
   INSERT INTO \
     NamingConfig(\
       'ReplaceIllegalCharacters',\
@@ -140,6 +145,7 @@ fi
       '{Artist Name} - {Album Title} - {track:00} - {Track Title}',\
       '{Album Title} ({Release Year})');"
 /usr/bin/sqlite3 /config/lidarr.db "\
+  ${TIMEOUT} \
   INSERT INTO \
     RootFolders('Path') \
     VALUES('/data/music');"

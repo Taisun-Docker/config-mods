@@ -81,8 +81,11 @@ else
   exit 0
 fi
 
+# Timeout Prepend
+TIMEOUT="pragma busy_timeout=30000;"
 # Insert our fresh config into the database
 /usr/bin/sqlite3 /config/${DBNAME}.db "\
+  ${TIMEOUT} \
   INSERT INTO \
   Indexers(\
     'Name',\
@@ -105,6 +108,7 @@ fi
     }',\
      \"${INDEX_CONFIG}\",1,1);"
 /usr/bin/sqlite3 /config/${DBNAME}.db "\
+  ${TIMEOUT} \
   INSERT INTO \
   DownloadClients(\
     'Enable',\
@@ -129,6 +133,7 @@ fi
     }',\
     'NzbgetSettings');"
 /usr/bin/sqlite3 /config/${DBNAME}.db "\
+  ${TIMEOUT} \
   INSERT INTO \
     NamingConfig(\
       'MultiEpisodeStyle',\
@@ -145,6 +150,7 @@ fi
       '{Movie Title} ({Release Year})',\
       0);"
 /usr/bin/sqlite3 /config/${DBNAME}.db "\
+  ${TIMEOUT} \
   UPDATE NamingConfig SET \
     'MultiEpisodeStyle' = 0,\
     'RenameEpisodes' = 1,\
@@ -153,6 +159,7 @@ fi
     'MovieFolderFormat' = '{Movie Title} ({Release Year})',\
     'ColonReplacementFormat' = 0"
 /usr/bin/sqlite3 /config/${DBNAME}.db "\
+  ${TIMEOUT} \
   INSERT INTO \
     RootFolders('Path') \
     VALUES('/data/movies');"
