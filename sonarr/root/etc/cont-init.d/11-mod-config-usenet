@@ -59,7 +59,7 @@ if [ ! -f "/config/nzbdrone.db" -a ! -f "/config/sonarr.db" ]; then
     sleep 1
   done
   # On init the ReplaceIllegalCharacters column in NamingConfig is the last DB migration we require
-  while [ /usr/bin/sqlite3 /config/${DBNAME}.db '.schema NamingConfig' != *"ReplaceIllegalCharacters"* ];
+  while [[ "$(/usr/bin/sqlite3 /config/${DBNAME}.db '.schema NamingConfig')" != *"ReplaceIllegalCharacters"* ]];
   do
     echo "final DB import check..."
     sleep 1
