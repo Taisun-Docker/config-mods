@@ -46,13 +46,16 @@ if [ ! -f "/config/lidarr.db" ]; then
     sleep 1
   done
   # On init the ReplaceIllegalCharacters column in NamingConfig is the last DB migration we require
-  while [[ "$(/usr/bin/sqlite3 /config/${DBNAME}.db '.schema NamingConfig')" != *"ReplaceIllegalCharacters"* ]];
+  while [[ "$(/usr/bin/sqlite3 /config/lidarr.db '.schema NamingConfig')" != *"ReplaceIllegalCharacters"* ]];
   do
     echo "final DB import check..."
     sleep 1
   done
   sleep 1
-  kill $PID
+  while kill -0 $PID; do
+    sleep 1
+    kill $PID
+  done
 else
   echo "[cont-init.d] This container is already configured"
   exit 0

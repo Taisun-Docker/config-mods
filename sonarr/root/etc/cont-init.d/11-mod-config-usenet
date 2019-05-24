@@ -65,7 +65,10 @@ if [ ! -f "/config/nzbdrone.db" -a ! -f "/config/sonarr.db" ]; then
     sleep 1
   done
   sleep 1
-  kill $PID
+  while kill -0 $PID; do
+    sleep 1
+    kill $PID
+  done
 else
   echo "[cont-init.d] This container is already configured"
   exit 0
