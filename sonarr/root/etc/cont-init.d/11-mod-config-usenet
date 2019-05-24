@@ -35,6 +35,7 @@ if [ ! -f "/config/nzbdrone.db" -a ! -f "/config/sonarr.db" ]; then
   else
     DBNAME=nzbdrone
   fi
+  # Loop to detect file changes
   while true;
   do
       echo "waiting for database schema import..."
@@ -51,6 +52,19 @@ if [ ! -f "/config/nzbdrone.db" -a ! -f "/config/sonarr.db" ]; then
         fi
       fi
   done
+  # If previous loop caught a race condition check to make sure NamingConfig exists
+  while ! /usr/bin/sqlite3 /config/${DBNAME}.db 'select * from NamingConfig' > /dev/null 2>&1;
+  do
+    echo "checking for DB import..."
+    sleep 1
+  done
+  # On init the ReplaceIllegalCharacters column in NamingConfig is the last DB migration we require
+  while [ /usr/bin/sqlite3 /config/${DBNAME}.db '.schema NamingConfig' != *"ReplaceIllegalCharacters"* ];
+  do
+    echo "final DB import check..."
+    sleep 1
+  done
+  sleep 1
   kill $PID
 else
   echo "[cont-init.d] This container is already configured"
