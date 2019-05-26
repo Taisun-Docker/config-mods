@@ -183,9 +183,17 @@ fi
   INSERT INTO \
     RootFolders('Path') \
     VALUES('/data/movies');"
+/usr/bin/sqlite3 /config/${DBNAME}.db "\
+  INSERT INTO \
+    Restrictions(\
+      'Ignored',\
+      'Tags')\
+    VALUES(\
+      '.3D.,.AC3D.,.AC3LD.,.AC3MD.,.CAM.,.DTSD.,.HC.,.HD-TS.,HEVC,x265,.HDCAM.,.HQDTS.,.HQHDTS.,.ISO.,.R5.,.R6.,.SCR.,.TELESYNC.,.TS.,divx,dksub,dubbed,dvd9,FGT,hdrip,hebrew,hebsubs,hqcam,hevc,korsub,multisubs,swesub,truefrench,xvid,yify,AVC,2160p,BDSCR,BRrip,CAM,CAMRIP,core2hd,divx,DVDSCR,DVDSCREENER,HD2DVD,HDCAM,HDChina,HDTS,Micromkv,PDVD,SCR,SCREENER,TELECINE,TELESYNC,WORKPRINT,WP,XviD',\
+      '[]');"
 
 # permissions
 mkdir -p /data/movies
 chown abc:abc \
-	/data \
+  /data \
   /data/movies
