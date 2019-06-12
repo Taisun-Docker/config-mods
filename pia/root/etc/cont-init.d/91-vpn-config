@@ -1,0 +1,38 @@
+#!/usr/bin/with-contenv bash
+
+# Env variable validation
+VARS=( \
+PIAUSER \
+PIAPASS \
+PIAENDPOINT
+)
+for i in "${VARS[@]}"; do
+  if [ -z ${!i+x} ]; then
+    echo "[cont-init.d] ${i} is required and is not set will not continue"
+    exit 0
+  fi
+done
+
+# Determine if setup is needed
+if [ ! -f /usr/sbin/openvpn ] && [ -f /usr/bin/apt ]; then
+  ## Ubuntu
+  apt-get update
+  apt-get install -y \
+    openvpn
+fi
+if [ ! -f /usr/sbin/openvpn ] && [ -f /sbin/apk ]; then
+  # Alpine
+  apk add --no-cache \
+    openvpn
+fi
+
+# create tun device
+if [ ! -c /dev/net/tun ]; then
+  mkdir -p /dev/net
+  mknod /dev/net/tun c 10 200
+fi
+
+# make auth file from env
+echo "${PIAUSER}" > /auth.txt
+echo "${PIAPASS}" >> /auth.txt
+chmod 600 /auth.txt
