@@ -59,7 +59,7 @@ elif [ "${SERVER_PROVIDER}" == "XLned" ]; then
   SERVER_CONS="10"
 elif [ "${SERVER_PROVIDER}" == "NewsDemon" ]; then
   SERVER_HOST="news.newsdemon.com"
-  SERVER_PORT="443"
+  SERVER_PORT="563"
   SERVER_SSL="yes"
   SERVER_CONS="10"
 else
