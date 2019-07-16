@@ -57,6 +57,11 @@ elif [ "${SERVER_PROVIDER}" == "XLned" ]; then
   SERVER_PORT="443"
   SERVER_SSL="yes"
   SERVER_CONS="10"
+elif [ "${SERVER_PROVIDER}" == "NewsDemon" ]; then
+  SERVER_HOST="news.newsdemon.com"
+  SERVER_PORT="443"
+  SERVER_SSL="yes"
+  SERVER_CONS="10"
 else
   echo "[cont-init.d] Your Provider ${SERVER_PROVIDER} is not recognized will not continue"
   rm /config/nzbget.conf
