@@ -15,7 +15,7 @@ done
 
 # Check if this is a fresh container run service briefly to create database
 if [ ! -f "/config/nzbdrone.db" -a ! -f "/config/radarr.db" ]; then
-  (mono /opt/radarr/Radarr.exe \
+  (mono /app/radarr/bin/Radarr.exe \
   -nobrowser -data=/config > /dev/null 2>&1) & PID=$!
   while [ ! -f "/config/nzbdrone.db" -a ! -f "/config/radarr.db" ];
   do

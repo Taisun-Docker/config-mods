@@ -14,8 +14,8 @@ for i in "${VARS[@]}"; do
 done
 
 # Set executable path
-if [ -f "/opt/NzbDrone/NzbDrone.exe" ]; then
-  EXE="/opt/NzbDrone/NzbDrone.exe"
+if [ -f "/app/sonarr/bin/NzbDrone.exe" ]; then
+  EXE="/app/sonarr/bin/NzbDrone.exe"
 else
   EXE="/usr/lib/sonarr/bin/Sonarr.exe"
 fi
